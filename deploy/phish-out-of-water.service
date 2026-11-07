@@ -1,0 +1,20 @@
+[Unit]
+Description=Phish Out of Water - suspicious link inspector
+After=network-online.target docker.service pootw-sandbox-network.service
+Requires=docker.service pootw-sandbox-network.service
+
+[Service]
+User=phishoutofwater
+Group=phishoutofwater
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__APP_DIR__/.env
+ExecStart=/usr/bin/node __APP_DIR__/dist/main.js
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

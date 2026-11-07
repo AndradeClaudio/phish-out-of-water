@@ -1,0 +1,88 @@
+import { execFile, spawn } from 'node:child_process';
+import { promisify } from 'node:util';
+import type { Sandbox } from '../../application/ports.js';
+import type { Evidence } from '../../domain/evidence.js';
+import type { WebAddress } from '../../domain/web-address.js';
+import { parseDetonationReport, toEvidence } from './detonation-report.js';
+
+const runCommand = promisify(execFile);
+
+export interface DockerSandboxSettings {
+  readonly image: string;
+  readonly network: string;
+  /** e.g. "runsc" for gVisor; null uses Docker's default runtime. */
+  readonly runtime: string | null;
+  readonly timeoutSeconds: number;
+}
+
+/**
+ * One throwaway container per link: read-only filesystem, no Linux capabilities,
+ * capped memory/CPU/processes, its own network, removed as soon as it finishes or times out.
+ */
+export class DockerSandbox implements Sandbox {
+  constructor(private readonly settings: DockerSandboxSettings) {}
+
+  async detonate(link: WebAddress): Promise<Evidence> {
+    const containerName = `pootw-detonation-${crypto.randomUUID()}`;
+    try {
+      const output = await this.runContainer(containerName, link);
+      return toEvidence(parseDetonationReport(output), link);
+    } finally {
+      await this.destroy(containerName);
+    }
+  }
+
+  private runContainer(containerName: string, link: WebAddress): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const container = spawn('docker', this.runArguments(containerName, link), { stdio: ['ignore', 'pipe', 'pipe'] });
+      let output = '';
+      let diagnostics = '';
+      const timer = setTimeout(() => {
+        void this.destroy(containerName);
+        reject(new Error(`The sandbox exceeded its ${this.settings.timeoutSeconds}s time limit and was destroyed.`));
+      }, this.settings.timeoutSeconds * 1000);
+
+      container.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()));
+      container.stderr.on('data', (chunk: Buffer) => (diagnostics += chunk.toString()));
+      container.on('error', (error) => {
+        clearTimeout(timer);
+        console.error(`Sandbox ${containerName} could not start.`, error);
+        reject(new Error('The sandbox is not available right now. Please try again in a moment.'));
+      });
+      container.on('close', (exitCode) => {
+        clearTimeout(timer);
+        if (exitCode === 0) {
+          resolve(output);
+          return;
+        }
+        console.error(`Sandbox ${containerName} exited with code ${exitCode}.`, diagnostics.trim().slice(-2000));
+        reject(new Error('The sandbox stopped unexpectedly. Please try again in a moment.'));
+      });
+    });
+  }
+
+  private runArguments(containerName: string, link: WebAddress): string[] {
+    const runtime = this.settings.runtime === null ? [] : ['--runtime', this.settings.runtime];
+    return [
+      'run', '--rm', '--name', containerName,
+      ...runtime,
+      '--network', this.settings.network,
+      '--read-only',
+      '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m',
+      '--tmpfs', '/home/pwuser:rw,nosuid,nodev,size=128m',
+      '--shm-size', '256m',
+      '--cap-drop', 'ALL',
+      '--security-opt', 'no-new-privileges',
+      '--pids-limit', '512',
+      '--memory', '1g',
+      '--cpus', '1',
+      '--user', 'pwuser',
+      this.settings.image,
+      link.href,
+    ];
+  }
+
+  private async destroy(containerName: string): Promise<void> {
+    await runCommand('docker', ['rm', '--force', containerName]).catch(() => undefined);
+  }
+}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Phish Out of Water - isolate the sandbox network from private ranges
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pootw-sandbox-network
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

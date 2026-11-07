@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phish Out of Water</title>
+  <meta name="description" content="Got a suspicious link? We open it for you inside a disposable sandbox and tell you, in plain words, if it is a scam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="brand">🐟 Phish Out of Water</p>
+      <p class="eyebrow">Sandboxed on Vultr · Blast radius zero</p>
+      <h1>Got a weird link?<br><span>We'll open it for you.</span></h1>
+      <p class="lede">Paste it below. A throwaway browser opens it inside an isolated sandbox, watches what it does, and is destroyed afterwards. You get a plain answer: safe, suspicious, or scam.</p>
+
+      <form id="inspect-form" class="inspect-form" autocomplete="off">
+        <label for="link-input" class="visually-hidden">Suspicious link</label>
+        <input id="link-input" name="link" type="text" inputmode="url" spellcheck="false"
+               placeholder="e.g. https://parcel-fee-payment.example/track" required>
+        <button id="inspect-button" type="submit">Open it safely</button>
+      </form>
+      <p id="form-error" class="form-error" role="alert" hidden></p>
+      <p class="fine-print">Never open the link on your own device. We never click "allow", never type anything into the page, and nothing it downloads ever leaves the sandbox.</p>
+    </header>
+
+    <section id="inspection" class="inspection" hidden aria-live="polite">
+      <div class="panel live">
+        <div class="panel-head">
+          <span id="status-dot" class="status-dot"></span>
+          <h2 id="status-title">Opening the link in a sandbox…</h2>
+        </div>
+        <p id="inspected-link" class="mono inspected-link"></p>
+        <ol id="timeline" class="timeline"></ol>
+      </div>
+
+      <div id="result" class="panel result" hidden>
+        <div class="verdict-banner" id="verdict-banner">
+          <span class="verdict-label" id="verdict-label"></span>
+          <h2 id="report-headline"></h2>
+          <p id="report-explanation"></p>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-column">
+            <h3>What you should do</h3>
+            <ul id="report-advice" class="advice"></ul>
+
+            <h3 id="signals-title">Why we think so</h3>
+            <ul id="signals" class="signals"></ul>
+
+            <div id="downloads-block" hidden>
+              <h3>Contained downloads</h3>
+              <ul id="downloads" class="downloads"></ul>
+            </div>
+
+            <h3>Where the link took us</h3>
+            <ol id="navigation-path" class="navigation-path mono"></ol>
+          </div>
+
+          <figure id="screenshot-figure" class="screenshot" hidden>
+            <img id="screenshot" alt="Screenshot of the page, taken inside the sandbox">
+            <figcaption id="screenshot-caption"></figcaption>
+          </figure>
+        </div>
+
+        <button id="check-another" class="secondary" type="button">Check another link</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      Built for the Vultr Agent Rush Hackathon · Vultr Cloud Compute + Vultr Serverless Inference
+    </footer>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

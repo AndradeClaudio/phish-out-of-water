@@ -1,0 +1,19 @@
+{
+  "name": "phish-out-of-water-detonator",
+  "version": "1.0.0",
+  "description": "Disposable browser sandbox that opens one suspicious link and reports what it saw.",
+  "main": "dist/detonate.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "1.49.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "5.7"
+  },
+  "private": true
+}
