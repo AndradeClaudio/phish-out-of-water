@@ -112,9 +112,10 @@ npm test
 
 ### Demo scam page
 
-`demo/scam-page/` is a static, harmless imitation of a "customs fee" SMS scam for a **fictional** brand. Host it
-anywhere public (it must not be on the app's own VM, because the sandbox cannot reach its host) and paste its
-URL into the app.
+`demo/scam-page/` is a static, harmless imitation of a "customs fee" SMS scam for a **fictional** brand.
+It is published at **https://andradeclaudio.github.io/phish-out-of-water-demo/**: paste that link into the app
+to see a containment. To host your own copy, use any public static host other than the app's own VM, because the
+sandbox cannot reach its host.
 
 ## Limitations
 
