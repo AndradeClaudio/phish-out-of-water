@@ -1,4 +1,5 @@
 const POLL_INTERVAL_MS = 1000;
+const DEMO_SCAM_LINK = 'https://andradeclaudio.github.io/phish-out-of-water-demo/';
 
 const VERDICT_LABELS = {
   dangerous: 'Scam detected',
@@ -19,7 +20,7 @@ const elements = Object.fromEntries(
     'inspect-form', 'link-input', 'inspect-button', 'form-error', 'inspection', 'status-dot', 'status-title',
     'inspected-link', 'timeline', 'result', 'verdict-banner', 'verdict-label', 'report-headline', 'report-explanation',
     'report-advice', 'signals', 'signals-title', 'downloads-block', 'downloads', 'navigation-path',
-    'screenshot-figure', 'screenshot', 'screenshot-caption', 'check-another',
+    'screenshot-figure', 'screenshot', 'screenshot-caption', 'check-another', 'try-demo',
   ].map((id) => [id, document.getElementById(id)]),
 );
 
@@ -28,6 +29,11 @@ let pollTimer = null;
 elements['inspect-form'].addEventListener('submit', async (event) => {
   event.preventDefault();
   await startInspection(elements['link-input'].value);
+});
+
+elements['try-demo'].addEventListener('click', async () => {
+  elements['link-input'].value = DEMO_SCAM_LINK;
+  await startInspection(DEMO_SCAM_LINK);
 });
 
 elements['check-another'].addEventListener('click', () => {
@@ -82,6 +88,7 @@ function resetInspectionPanel() {
   elements.inspection.hidden = false;
   elements.result.hidden = true;
   elements.timeline.replaceChildren();
+  elements['status-dot'].closest('.panel').classList.remove('finished');
   elements.inspection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -89,6 +96,8 @@ function renderProgress(inspection) {
   elements['inspected-link'].textContent = inspection.link;
   elements['status-title'].textContent = STATUS_TITLES[inspection.status];
   elements['status-dot'].className = `status-dot ${inspection.status === 'concluded' ? 'done' : inspection.status === 'failed' ? 'failed' : ''}`;
+  const isFinished = inspection.status === 'concluded' || inspection.status === 'failed';
+  elements['status-dot'].closest('.panel').classList.toggle('finished', isFinished);
 
   const alreadyShown = elements.timeline.children.length;
   inspection.timeline.slice(alreadyShown).forEach((entry) => {
@@ -153,7 +162,8 @@ function fillList(list, items, toContent) {
 
 function setSubmitting(isSubmitting) {
   elements['inspect-button'].disabled = isSubmitting;
-  elements['inspect-button'].textContent = isSubmitting ? 'Opening…' : 'Open it safely';
+  elements['try-demo'].disabled = isSubmitting;
+  elements['inspect-button'].querySelector('.button-label').textContent = isSubmitting ? 'Opening…' : 'Open it safely';
 }
 
 function showFormError(message) {

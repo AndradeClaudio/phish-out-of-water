@@ -5,27 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Phish Out of Water</title>
   <meta name="description" content="Got a suspicious link? We open it for you inside a disposable sandbox and tell you, in plain words, if it is a scam.">
+  <meta name="theme-color" content="#05070d">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐟</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="aurora aurora-one"></div>
+    <div class="aurora aurora-two"></div>
+    <div class="aurora aurora-three"></div>
+    <div class="grid-lines"></div>
+    <div class="bubbles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="grain"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="logo" href="/">
+      <span class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12c3.5-5 9.5-6.5 14-2.5L21 6v12l-4-3.5C12.5 18.5 6.5 17 3 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.5" cy="11" r="1" fill="currentColor"/></svg>
+      </span>
+      Phish Out of Water
+    </a>
+    <div class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="https://github.com/AndradeClaudio/phish-out-of-water" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <span class="nav-badge"><span class="live-dot"></span>Live on Vultr</span>
+  </nav>
+
   <main class="page">
     <header class="hero">
-      <p class="brand">🐟 Phish Out of Water</p>
-      <p class="eyebrow">Sandboxed on Vultr · Blast radius zero</p>
-      <h1>Got a weird link?<br><span>We'll open it for you.</span></h1>
-      <p class="lede">Paste it below. A throwaway browser opens it inside an isolated sandbox, watches what it does, and is destroyed afterwards. You get a plain answer: safe, suspicious, or scam.</p>
+      <p class="eyebrow reveal"><span class="eyebrow-tag">Blast radius zero</span>Sandboxed browser agent on Vultr</p>
+      <h1 class="reveal">
+        Got a weird link?
+        <em>We'll open it for you.</em>
+      </h1>
+      <p class="lede reveal">A throwaway browser opens it inside an isolated sandbox, watches everything it does, and is destroyed afterwards. You get a plain answer: <strong>safe</strong>, <strong>suspicious</strong> or <strong>scam</strong>.</p>
 
-      <form id="inspect-form" class="inspect-form" autocomplete="off">
+      <form id="inspect-form" class="inspect-form reveal" autocomplete="off">
         <label for="link-input" class="visually-hidden">Suspicious link</label>
+        <span class="input-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </span>
         <input id="link-input" name="link" type="text" inputmode="url" spellcheck="false"
-               placeholder="e.g. https://parcel-fee-payment.example/track" required>
-        <button id="inspect-button" type="submit">Open it safely</button>
+               placeholder="Paste the suspicious link…" required>
+        <button id="inspect-button" type="submit">
+          <span class="button-label">Open it safely</span>
+          <svg class="button-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </form>
       <p id="form-error" class="form-error" role="alert" hidden></p>
-      <p class="fine-print">Never open the link on your own device. We never click "allow", never type anything into the page, and nothing it downloads ever leaves the sandbox.</p>
+      <div class="hero-meta reveal">
+        <button id="try-demo" class="chip" type="button">
+          <span class="chip-dot"></span>Try a harmless demo scam
+        </button>
+        <span class="fine-print">We never type into the page, never click "allow", and nothing it downloads leaves the sandbox.</span>
+      </div>
     </header>
 
     <section id="inspection" class="inspection" hidden aria-live="polite">
@@ -35,6 +73,7 @@
           <h2 id="status-title">Opening the link in a sandbox…</h2>
         </div>
         <p id="inspected-link" class="mono inspected-link"></p>
+        <div class="scanner" aria-hidden="true"><span></span></div>
         <ol id="timeline" class="timeline"></ol>
       </div>
 
@@ -63,12 +102,34 @@
           </div>
 
           <figure id="screenshot-figure" class="screenshot" hidden>
-            <img id="screenshot" alt="Screenshot of the page, taken inside the sandbox">
+            <div class="phone"><img id="screenshot" alt="Screenshot of the page, taken inside the sandbox"></div>
             <figcaption id="screenshot-caption"></figcaption>
           </figure>
         </div>
 
         <button id="check-another" class="secondary" type="button">Check another link</button>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="steps">
+      <p class="section-kicker">How it works</p>
+      <h2 class="section-title">Opened, watched, <em>destroyed.</em></h2>
+      <div class="step-grid">
+        <article class="step">
+          <span class="step-number">01</span>
+          <h3>Isolate</h3>
+          <p>A fresh container starts under gVisor: read-only, no privileges, no private network, no way back to the host.</p>
+        </article>
+        <article class="step">
+          <span class="step-number">02</span>
+          <h3>Detonate</h3>
+          <p>A phone-like Chromium follows every redirect, catches downloads and screenshots what the page asks for.</p>
+        </article>
+        <article class="step">
+          <span class="step-number">03</span>
+          <h3>Judge</h3>
+          <p>Vultr Serverless Inference describes the page. Explicit rules, not the model, decide the verdict.</p>
+        </article>
       </div>
     </section>
 
