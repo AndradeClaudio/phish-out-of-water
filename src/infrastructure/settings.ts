@@ -1,7 +1,9 @@
+import type { ChromiumSandboxMode, DockerSandboxSettings } from './sandbox/docker-sandbox.js';
+
 export interface Settings {
   readonly port: number;
   readonly inference: { readonly apiKey: string; readonly baseUrl: string; readonly visionModel: string; readonly reportModel: string };
-  readonly sandbox: { readonly image: string; readonly network: string; readonly runtime: string | null; readonly resolverConfig: string | null; readonly timeoutSeconds: number };
+  readonly sandbox: DockerSandboxSettings;
   readonly maxConcurrentInspections: number;
 }
 
@@ -19,6 +21,7 @@ export function readSettings(environment: NodeJS.ProcessEnv): Settings {
       network: environment.SANDBOX_NETWORK || 'pootw-sandbox',
       runtime: environment.SANDBOX_RUNTIME || null,
       resolverConfig: environment.SANDBOX_RESOLV_CONF || null,
+      chromiumSandbox: chromiumSandboxMode(environment, 'SANDBOX_CHROMIUM_SANDBOX'),
       timeoutSeconds: positiveInteger(environment, 'SANDBOX_TIMEOUT_SECONDS', 75),
     },
     maxConcurrentInspections: positiveInteger(environment, 'MAX_CONCURRENT_INSPECTIONS', 2),
@@ -31,6 +34,14 @@ function required(environment: NodeJS.ProcessEnv, name: string): string {
     throw new Error(`Missing required environment variable ${name}.`);
   }
   return value;
+}
+
+function chromiumSandboxMode(environment: NodeJS.ProcessEnv, name: string): ChromiumSandboxMode {
+  const raw = environment[name] || 'enabled';
+  if (raw !== 'enabled' && raw !== 'disabled') {
+    throw new Error(`${name} must be "enabled" or "disabled", got "${raw}".`);
+  }
+  return raw;
 }
 
 function positiveInteger(environment: NodeJS.ProcessEnv, name: string, defaultValue: number): number {

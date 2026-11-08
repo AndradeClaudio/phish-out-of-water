@@ -129,8 +129,12 @@ sandbox cannot reach its host.
 ## What if the link carries real malware?
 
 - **Malicious files** are caught, fingerprinted and destroyed with the container. They are never executed.
-- **Browser exploits** land in a container with no root, no capabilities, no secrets and no private network,
-  which lives for at most 75 s, and they would still have to escape gVisor to reach the host.
+- **Browser exploits** first hit Chromium's own sandbox: every renderer runs in its own user and PID
+  namespaces with a seccomp-BPF syscall filter (verified inside the container). Escaping it only lands them in
+  a container with no root, no capabilities, no secrets and no private network, which lives for at most 75 s,
+  and they would still have to escape gVisor to reach the host. Chromium's sandbox needs gVisor (Docker's default
+  seccomp profile blocks the namespaces it uses), so it is required by default and the inspection fails rather
+  than running without it.
 - **Paranoid mode (designed, not implemented):** for the most dangerous links, each one would get its
   own disposable Vultr instance created and destroyed through the Vultr API, so the boundary becomes a
   hypervisor. It plugs into the same `Sandbox` port with no domain changes.

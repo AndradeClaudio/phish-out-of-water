@@ -17,8 +17,12 @@ export interface DockerSandboxSettings {
    * Needed under gVisor, which cannot reach Docker's embedded DNS server (127.0.0.11).
    */
   readonly resolverConfig: string | null;
+  /** Chromium's own sandbox inside the container. Only works under gVisor; disable it for local runc. */
+  readonly chromiumSandbox: ChromiumSandboxMode;
   readonly timeoutSeconds: number;
 }
+
+export type ChromiumSandboxMode = 'enabled' | 'disabled';
 
 /**
  * One throwaway container per link: read-only filesystem, no Linux capabilities,
@@ -74,6 +78,7 @@ export class DockerSandbox implements Sandbox {
       ...runtime,
       '--network', this.settings.network,
       ...resolver,
+      '--env', `CHROMIUM_SANDBOX=${this.settings.chromiumSandbox}`,
       '--read-only',
       '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m',
       '--tmpfs', '/home/pwuser:rw,nosuid,nodev,size=128m',

@@ -14,6 +14,19 @@ const LATE_REDIRECT_GRACE_MS = 3_000;
 const DOWNLOAD_CAPTURE_TIMEOUT_MS = 15_000;
 const VISIBLE_TEXT_LIMIT = 2_000;
 
+/**
+ * Chromium's own sandbox (namespaces + seccomp-BPF per renderer) is an extra layer inside the container.
+ * It works under gVisor but not under Docker's default runtime, so it is required unless explicitly
+ * disabled for local development: we never silently fall back to a weaker sandbox.
+ */
+function chromiumSandboxIsRequired(): boolean {
+  const setting = process.env.CHROMIUM_SANDBOX ?? 'enabled';
+  if (setting !== 'enabled' && setting !== 'disabled') {
+    throw new Error(`CHROMIUM_SANDBOX must be "enabled" or "disabled", got "${setting}".`);
+  }
+  return setting === 'enabled';
+}
+
 interface CapturedDownload {
   fileName: string;
   sourceUrl: string;
@@ -38,7 +51,7 @@ interface DetonationReport {
 }
 
 async function detonate(link: string): Promise<DetonationReport> {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, chromiumSandbox: chromiumSandboxIsRequired() });
   try {
     const context = await browser.newContext({ ...devices['Pixel 7'], acceptDownloads: true, locale: 'en-US' });
     const page = await context.newPage();

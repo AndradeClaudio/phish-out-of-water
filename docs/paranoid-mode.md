@@ -10,7 +10,7 @@ Today every link is opened in a Docker container under gVisor. The layers are:
 | Threat | Current containment |
 |---|---|
 | The page pushes malware (`.apk`, `.exe`, ...) | The file is fingerprinted and deleted with the container. It is never executed, and it could not run on that Linux anyway. |
-| The page exploits a Chromium zero-day | The attacker lands in a container with no root, no capabilities, a read-only filesystem, no secrets, no private network, a 75 s lifetime, **and still has to escape gVisor's user-space kernel** to reach the host. |
+| The page exploits a Chromium zero-day | The attacker first has to escape Chromium's own sandbox (per-renderer namespaces and seccomp-BPF). Then they land in a container with no root, no capabilities, a read-only filesystem, no secrets, no private network, a 75 s lifetime, **and still has to escape gVisor's user-space kernel** to reach the host. |
 | The container is abused to attack third parties | Limited to the 75 s lifetime and capped CPU, memory and processes. |
 
 That is strong, but gVisor is still software running on the same machine as the app. For the most
