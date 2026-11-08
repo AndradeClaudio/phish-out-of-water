@@ -54,7 +54,9 @@ Click **"Try a harmless demo scam"** to watch a containment, or paste any link y
 | Service | Role |
 |---|---|
 | **Vultr Cloud Compute** | Hosts the web app and is the control plane that creates, limits and destroys every sandbox. |
-| **Vultr Serverless Inference** (`https://api.vultrinference.com/v1`) | Vision model (`qwen3.8-flash-next` by default) reads the sandbox screenshot; a text model writes the report for non-technical people. |
+| **Vultr Serverless Inference: chat and vision** (`https://api.vultrinference.com/v1/chat/completions`) | Vision model (`qwen3.8-flash-next` by default) reads the sandbox screenshot; a text model writes the report for non-technical people. |
+| **Vultr Serverless Inference: text-to-speech** (`/v1/audio/speech`) | Narrated the demo video with `qwen3-tts-12hz-1.7b`, voice "Aiden". We compared all four Vultr speech models and checked each sample with Vultr's `whisper-large-v3-turbo` transcription before choosing. |
+| **Vultr API v2** (`https://api.vultr.com/v2`) | Provisioned the VM and the Serverless Inference subscription. Paranoid mode (designed) would use it to create and destroy one VM per link. |
 
 ### Why the verdict is not left to the LLM
 
