@@ -117,6 +117,16 @@ It is published at **https://andradeclaudio.github.io/phish-out-of-water-demo/**
 to see a containment. To host your own copy, use any public static host other than the app's own VM, because the
 sandbox cannot reach its host.
 
+## What if the link carries real malware?
+
+- **Malicious files** are caught, fingerprinted and destroyed with the container. They are never executed.
+- **Browser exploits** land in a container with no root, no capabilities, no secrets and no private network,
+  which lives for at most 75 s, and they would still have to escape gVisor to reach the host.
+- **Paranoid mode (designed, not implemented):** for the most dangerous links, each one would get its
+  own disposable Vultr instance created and destroyed through the Vultr API, so the boundary becomes a
+  hypervisor. It plugs into the same `Sandbox` port with no domain changes.
+  See [docs/paranoid-mode.md](docs/paranoid-mode.md).
+
 ## Limitations
 
 - Inspections are kept in memory (most recent 500); a restart clears them.
