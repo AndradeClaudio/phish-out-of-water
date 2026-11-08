@@ -1,7 +1,7 @@
 export interface Settings {
   readonly port: number;
   readonly inference: { readonly apiKey: string; readonly baseUrl: string; readonly visionModel: string; readonly reportModel: string };
-  readonly sandbox: { readonly image: string; readonly network: string; readonly runtime: string | null; readonly timeoutSeconds: number };
+  readonly sandbox: { readonly image: string; readonly network: string; readonly runtime: string | null; readonly resolverConfig: string | null; readonly timeoutSeconds: number };
   readonly maxConcurrentInspections: number;
 }
 
@@ -18,6 +18,7 @@ export function readSettings(environment: NodeJS.ProcessEnv): Settings {
       image: environment.SANDBOX_IMAGE || 'phish-out-of-water/detonator:latest',
       network: environment.SANDBOX_NETWORK || 'pootw-sandbox',
       runtime: environment.SANDBOX_RUNTIME || null,
+      resolverConfig: environment.SANDBOX_RESOLV_CONF || null,
       timeoutSeconds: positiveInteger(environment, 'SANDBOX_TIMEOUT_SECONDS', 75),
     },
     maxConcurrentInspections: positiveInteger(environment, 'MAX_CONCURRENT_INSPECTIONS', 2),

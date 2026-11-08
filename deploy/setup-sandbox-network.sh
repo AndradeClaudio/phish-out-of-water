@@ -40,4 +40,9 @@ iptables -C DOCKER-USER -i "$BRIDGE_NAME" -j POOTW-SANDBOX 2>/dev/null || iptabl
 iptables -C INPUT -i "$BRIDGE_NAME" -p udp --dport 53 -j ACCEPT 2>/dev/null || iptables -I INPUT -i "$BRIDGE_NAME" -p udp --dport 53 -j ACCEPT
 iptables -C INPUT -i "$BRIDGE_NAME" -j DROP 2>/dev/null || iptables -A INPUT -i "$BRIDGE_NAME" -j DROP
 
+# Sandboxes resolve names through public resolvers: under gVisor they cannot use Docker's embedded DNS.
+mkdir -p /etc/pootw
+printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > /etc/pootw/sandbox-resolv.conf
+chmod 0644 /etc/pootw/sandbox-resolv.conf
+
 echo "Sandbox network $NETWORK_NAME is isolated from private ranges."

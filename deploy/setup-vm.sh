@@ -58,6 +58,7 @@ chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 if [[ ! -f "$APP_DIR/.env" ]]; then
   cp "$APP_DIR/.env.example" "$APP_DIR/.env"
   sed -i 's/^SANDBOX_RUNTIME=.*/SANDBOX_RUNTIME=runsc/' "$APP_DIR/.env"
+  sed -i 's#^SANDBOX_RESOLV_CONF=.*#SANDBOX_RESOLV_CONF=/etc/pootw/sandbox-resolv.conf#' "$APP_DIR/.env"
   chmod 600 "$APP_DIR/.env"
   chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
   echo "!!  Edit $APP_DIR/.env and set VULTR_INFERENCE_API_KEY, then run: systemctl restart phish-out-of-water"

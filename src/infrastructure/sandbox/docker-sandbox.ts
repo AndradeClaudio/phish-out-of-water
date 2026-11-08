@@ -12,6 +12,11 @@ export interface DockerSandboxSettings {
   readonly network: string;
   /** e.g. "runsc" for gVisor; null uses Docker's default runtime. */
   readonly runtime: string | null;
+  /**
+   * Host file mounted as the sandbox's /etc/resolv.conf; null keeps Docker's embedded DNS.
+   * Needed under gVisor, which cannot reach Docker's embedded DNS server (127.0.0.11).
+   */
+  readonly resolverConfig: string | null;
   readonly timeoutSeconds: number;
 }
 
@@ -63,10 +68,12 @@ export class DockerSandbox implements Sandbox {
 
   private runArguments(containerName: string, link: WebAddress): string[] {
     const runtime = this.settings.runtime === null ? [] : ['--runtime', this.settings.runtime];
+    const resolver = this.settings.resolverConfig === null ? [] : ['--volume', `${this.settings.resolverConfig}:/etc/resolv.conf:ro`];
     return [
       'run', '--rm', '--name', containerName,
       ...runtime,
       '--network', this.settings.network,
+      ...resolver,
       '--read-only',
       '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m',
       '--tmpfs', '/home/pwuser:rw,nosuid,nodev,size=128m',
