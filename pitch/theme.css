@@ -1,0 +1,59 @@
+/* Shared look for the cover and the slides: same palette and type as the web app. */
+:root {
+  --bg: #f6f8fc;
+  --text: #0b1020;
+  --muted: #4b5568;
+  --faint: #8a93a6;
+  --border: rgb(15 23 42 / 9%);
+  --cyan: #06b6d4;
+  --blue: #3b5bfd;
+  --violet: #8b5cf6;
+  --danger: #e11d48;
+  --safe: #059669;
+  --warning: #d97706;
+  --gradient: linear-gradient(120deg, var(--cyan), var(--blue) 50%, var(--violet));
+  --sans: Geist, Inter, system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --mono: "Geist Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.canvas {
+  position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg);
+  padding: 110px 140px;
+}
+.canvas::before, .canvas::after {
+  content: ""; position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.38; z-index: 0;
+}
+.canvas::before { width: 900px; height: 900px; top: -420px; left: -200px; background: var(--cyan); }
+.canvas::after { width: 900px; height: 900px; top: -380px; right: -260px; background: var(--violet); }
+.grid {
+  position: absolute; inset: 0; z-index: 0;
+  background-image: linear-gradient(rgb(15 23 42 / 5%) 1px, transparent 1px), linear-gradient(90deg, rgb(15 23 42 / 5%) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 30%, transparent 80%);
+}
+.content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+
+.logo { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: 30px; letter-spacing: -0.02em; }
+.logo-mark { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 15px; color: #fff; background: var(--gradient); box-shadow: 0 10px 30px -8px rgb(59 91 253 / 50%); }
+.logo-mark svg { width: 30px; height: 30px; }
+
+.pill { display: inline-flex; align-items: center; gap: 12px; padding: 8px 20px 8px 8px; border-radius: 999px; border: 1px solid var(--border); background: rgb(255 255 255 / 75%); color: var(--muted); font-size: 24px; }
+.pill b { padding: 6px 16px; border-radius: 999px; background: var(--gradient); color: #fff; font-weight: 600; font-size: 20px; }
+
+h1, h2 { margin: 0; font-weight: 500; letter-spacing: -0.045em; line-height: 1; }
+em.accent {
+  font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.015em;
+  background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.08em;
+}
+.kicker { margin: 0 0 22px; color: var(--cyan); font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; }
+.card {
+  border-radius: 28px; border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(255 255 255 / 72%));
+  box-shadow: 0 40px 90px -50px rgb(30 41 82 / 35%), inset 0 1px 0 #fff;
+}
+.mono { font-family: var(--mono); }
