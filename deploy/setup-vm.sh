@@ -69,6 +69,11 @@ systemctl daemon-reload
 systemctl enable --now phish-out-of-water.service
 
 echo "==> Serving over HTTPS"
+# Vultr's Ubuntu images ship with ufw enabled and only SSH open.
+if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
+  ufw allow 80/tcp
+  ufw allow 443/tcp
+fi
 PUBLIC_IP="$(curl -fsS http://169.254.169.254/v1/interfaces/0/ipv4/address 2>/dev/null || curl -fsS https://api.ipify.org)"
 SITE_ADDRESS="${SITE_ADDRESS:-${PUBLIC_IP//./-}.sslip.io}"
 cat > /etc/caddy/Caddyfile <<EOF
