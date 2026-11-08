@@ -35,6 +35,17 @@ if ! command -v caddy >/dev/null; then
   apt-get update && apt-get install -y caddy
 fi
 
+echo "==> Hardening SSH: keys only (public VMs see thousands of password guesses a day)"
+cat > /etc/ssh/sshd_config.d/00-pootw-hardening.conf <<'EOF'
+# Key-only SSH. Loaded first, so it wins over cloud-init defaults.
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin prohibit-password
+EOF
+sshd -t && systemctl reload ssh
+DEBIAN_FRONTEND=noninteractive apt-get install -y fail2ban
+systemctl enable --now fail2ban
+
 echo "==> Creating the service user (allowed to start sandboxes, nothing else)"
 id "$APP_USER" >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin "$APP_USER"
 usermod -aG docker "$APP_USER"

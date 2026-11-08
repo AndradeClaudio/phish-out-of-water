@@ -1,12 +1,12 @@
 # Disposable detonation sandbox: one container per link, destroyed right after.
-FROM mcr.microsoft.com/playwright:v1.49.1-noble AS build
+FROM mcr.microsoft.com/playwright:v1.64.1-noble AS build
 WORKDIR /build
 COPY package.json package-lock.json tsconfig.json ./
 RUN npm ci
 COPY src ./src
 RUN npx tsc
 
-FROM mcr.microsoft.com/playwright:v1.49.1-noble
+FROM mcr.microsoft.com/playwright:v1.64.1-noble
 ENV NODE_ENV=production
 WORKDIR /detonator
 COPY package.json package-lock.json ./

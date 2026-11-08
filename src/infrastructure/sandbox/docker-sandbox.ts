@@ -6,6 +6,9 @@ import type { WebAddress } from '../../domain/web-address.js';
 import { parseDetonationReport, toEvidence } from './detonation-report.js';
 
 const runCommand = promisify(execFile);
+/** A real report (evidence plus one JPEG screenshot) is well under 1 MB. */
+const MAX_REPORT_BYTES = 8 * 1024 * 1024;
+const MAX_DIAGNOSTICS_CHARACTERS = 4_000;
 
 export interface DockerSandboxSettings {
   readonly image: string;
@@ -44,15 +47,27 @@ export class DockerSandbox implements Sandbox {
   private runContainer(containerName: string, link: WebAddress): Promise<string> {
     return new Promise((resolve, reject) => {
       const container = spawn('docker', this.runArguments(containerName, link), { stdio: ['ignore', 'pipe', 'pipe'] });
-      let output = '';
+      const outputChunks: Buffer[] = [];
+      let outputBytes = 0;
       let diagnostics = '';
       const timer = setTimeout(() => {
         void this.destroy(containerName);
         reject(new Error(`The sandbox exceeded its ${this.settings.timeoutSeconds}s time limit and was destroyed.`));
       }, this.settings.timeoutSeconds * 1000);
 
-      container.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()));
-      container.stderr.on('data', (chunk: Buffer) => (diagnostics += chunk.toString()));
+      // The container's output is hostile input: a compromised sandbox must not be able to exhaust our memory.
+      container.stdout.on('data', (chunk: Buffer) => {
+        outputBytes += chunk.length;
+        if (outputBytes > MAX_REPORT_BYTES) {
+          clearTimeout(timer);
+          void this.destroy(containerName);
+          console.error(`Sandbox ${containerName} produced more than ${MAX_REPORT_BYTES} bytes and was destroyed.`);
+          reject(new Error('The sandbox stopped unexpectedly. Please try again in a moment.'));
+          return;
+        }
+        outputChunks.push(chunk);
+      });
+      container.stderr.on('data', (chunk: Buffer) => (diagnostics = (diagnostics + chunk.toString()).slice(-MAX_DIAGNOSTICS_CHARACTERS)));
       container.on('error', (error) => {
         clearTimeout(timer);
         console.error(`Sandbox ${containerName} could not start.`, error);
@@ -61,7 +76,7 @@ export class DockerSandbox implements Sandbox {
       container.on('close', (exitCode) => {
         clearTimeout(timer);
         if (exitCode === 0) {
-          resolve(output);
+          resolve(Buffer.concat(outputChunks).toString('utf8'));
           return;
         }
         console.error(`Sandbox ${containerName} exited with code ${exitCode}.`, diagnostics.trim().slice(-2000));

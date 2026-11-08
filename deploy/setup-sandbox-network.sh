@@ -36,8 +36,9 @@ done
 iptables -A POOTW-SANDBOX -j RETURN
 iptables -C DOCKER-USER -i "$BRIDGE_NAME" -j POOTW-SANDBOX 2>/dev/null || iptables -I DOCKER-USER -i "$BRIDGE_NAME" -j POOTW-SANDBOX
 
-# Traffic from the sandbox to the host itself (not forwarded) is dropped too, except DNS.
-iptables -C INPUT -i "$BRIDGE_NAME" -p udp --dport 53 -j ACCEPT 2>/dev/null || iptables -I INPUT -i "$BRIDGE_NAME" -p udp --dport 53 -j ACCEPT
+# Traffic from the sandbox to the host itself (not forwarded) is dropped too, with no exceptions:
+# sandboxes resolve names through public resolvers (see below), so they need nothing from the host.
+while iptables -D INPUT -i "$BRIDGE_NAME" -p udp --dport 53 -j ACCEPT 2>/dev/null; do :; done
 iptables -C INPUT -i "$BRIDGE_NAME" -j DROP 2>/dev/null || iptables -A INPUT -i "$BRIDGE_NAME" -j DROP
 
 # Sandboxes resolve names through public resolvers: under gVisor they cannot use Docker's embedded DNS.

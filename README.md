@@ -135,6 +135,12 @@ sandbox cannot reach its host.
   and they would still have to escape gVisor to reach the host. Chromium's sandbox needs gVisor (Docker's default
   seccomp profile blocks the namespaces it uses), so it is required by default and the inspection fails rather
   than running without it.
+- **A compromised sandbox can only talk back through its report**, and the app treats it as hostile input:
+  output is capped at 8 MB, every field is type-checked and size-capped, and a screenshot is kept only if its
+  bytes really are a JPEG or PNG. Screenshots are then served with `Content-Security-Policy: sandbox`, so even a
+  disguised page could never run on our origin. The site itself sends a strict CSP and the usual security headers.
+- **The host** accepts SSH keys only (with fail2ban), installs security updates automatically, and the
+  sandbox network cannot reach it at all.
 - **Paranoid mode (designed, not implemented):** for the most dangerous links, each one would get its
   own disposable Vultr instance created and destroyed through the Vultr API, so the boundary becomes a
   hypervisor. It plugs into the same `Sandbox` port with no domain changes.
