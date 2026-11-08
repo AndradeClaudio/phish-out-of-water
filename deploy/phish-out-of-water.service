@@ -1,14 +1,15 @@
 [Unit]
 Description=Phish Out of Water - suspicious link inspector
-After=network-online.target docker.service pootw-sandbox-network.service
-Wants=network-online.target
-Requires=docker.service pootw-sandbox-network.service
+# The app has no Docker access: it asks the detonation broker, through its socket, to open links.
+After=network-online.target pootw-detonation-broker.service
+Wants=network-online.target pootw-detonation-broker.service
 # Never give up restarting: the demo must come back on its own after any crash or reboot.
 StartLimitIntervalSec=0
 
 [Service]
 User=phishoutofwater
 Group=phishoutofwater
+SupplementaryGroups=pootw-broker-clients
 WorkingDirectory=__APP_DIR__
 EnvironmentFile=__APP_DIR__/.env
 ExecStart=/usr/bin/node __APP_DIR__/dist/main.js

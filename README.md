@@ -35,9 +35,12 @@ fictional brand that asks for card details and an SMS code and pushes a fake `Sw
 ## Architecture
 
 ```
- Browser ──HTTPS──> Caddy ──> Web app (Node.js, Vultr Cloud Compute VM)
+ Browser ──HTTPS──> Caddy ──> Web app (Node.js, Vultr Cloud Compute VM, no Docker access)
                                  │
-                                 ├─ docker run (gVisor runsc) ──> Detonator container (Playwright + Chromium)
+                                 ├─ local socket ──> Detonation broker (the only process allowed to use Docker;
+                                 │                   accepts nothing but a public web address)
+                                 │                      │
+                                 │                      └─ docker run (gVisor runsc) ──> Detonator container (Playwright + Chromium)
                                  │      read-only FS · cap-drop ALL · no-new-privileges · 1 CPU / 1 GB / 512 PIDs
                                  │      network "pootw-sandbox": public internet only (private ranges dropped)
                                  │      prints one JSON report, then the container is force-removed
@@ -83,9 +86,12 @@ src/
                     VisualAssessment, RiskAssessment (domain service), RiskSignal, Report
   application/      Use cases (OpenInspection, RunInspection, FollowInspection) and ports
                     (Sandbox, VisualAnalyst, ReportWriter, InspectionScheduler)
-  infrastructure/   Adapters: DockerSandbox, Vultr Inference client/analyst/report writer,
+  infrastructure/   Adapters: BrokeredSandbox (production) and DockerSandbox (local), the detonation
+                    broker and runner, Vultr Inference client/analyst/report writer,
                     in-memory repository, in-process scheduler, settings
   interface/http/   Fastify routes and the JSON view
+  main.ts           Composition root of the web app
+  broker.ts         Composition root of the detonation broker
 sandbox/            The detonator that runs inside each disposable container
 public/             The web UI
 deploy/             VM provisioning, sandbox network isolation, systemd units
@@ -139,6 +145,10 @@ sandbox cannot reach its host.
   output is capped at 8 MB, every field is type-checked and size-capped, and a screenshot is kept only if its
   bytes really are a JPEG or PNG. Screenshots are then served with `Content-Security-Policy: sandbox`, so even a
   disguised page could never run on our origin. The site itself sends a strict CSP and the usual security headers.
+- **The web app cannot start containers.** Docker access is root-equivalent, so only a tiny detonation broker
+  has it. The app asks the broker over a local socket, and the broker accepts nothing but a public web address,
+  which it re-validates. If the web app were ever compromised, an attacker could only ask for a link to be
+  opened, which any visitor can already do. The app also listens on loopback only, behind Caddy.
 - **The host** accepts SSH keys only (with fail2ban), installs security updates automatically, and the
   sandbox network cannot reach it at all.
 - **Paranoid mode (designed, not implemented):** for the most dangerous links, each one would get its

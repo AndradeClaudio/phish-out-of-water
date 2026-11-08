@@ -1,0 +1,26 @@
+[Unit]
+Description=Phish Out of Water - detonation broker (the only process allowed to start sandboxes)
+After=docker.service pootw-sandbox-network.service
+Requires=docker.service pootw-sandbox-network.service
+StartLimitIntervalSec=0
+
+[Service]
+User=pootw-broker
+# The socket is created with this group, which the web app's user belongs to: that is its only way in.
+Group=pootw-broker-clients
+SupplementaryGroups=docker
+EnvironmentFile=/etc/pootw/broker.env
+Environment=HOME=/run/pootw-broker
+ExecStart=/usr/bin/node __APP_DIR__/dist/broker.js
+RuntimeDirectory=pootw-broker
+RuntimeDirectoryMode=0750
+UMask=0007
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

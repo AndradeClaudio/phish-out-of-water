@@ -46,9 +46,13 @@ sshd -t && systemctl reload ssh
 DEBIAN_FRONTEND=noninteractive apt-get install -y fail2ban
 systemctl enable --now fail2ban
 
-echo "==> Creating the service user (allowed to start sandboxes, nothing else)"
+echo "==> Creating the service users: only the broker can start sandboxes, the web app cannot touch Docker"
+getent group pootw-broker-clients >/dev/null || groupadd --system pootw-broker-clients
+id pootw-broker >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin --gid pootw-broker-clients pootw-broker
+usermod -aG docker pootw-broker
 id "$APP_USER" >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin "$APP_USER"
-usermod -aG docker "$APP_USER"
+gpasswd --delete "$APP_USER" docker >/dev/null 2>&1 || true
+usermod -aG pootw-broker-clients "$APP_USER"
 
 echo "==> Isolating the sandbox network"
 bash "$APP_DIR/deploy/setup-sandbox-network.sh"
@@ -74,10 +78,31 @@ if [[ ! -f "$APP_DIR/.env" ]]; then
   chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
   echo "!!  Edit $APP_DIR/.env and set VULTR_INFERENCE_API_KEY, then run: systemctl restart phish-out-of-water"
 fi
+# The app listens on loopback only (Caddy is its front door) and reaches sandboxes through the broker.
+set_app_setting() { grep -q "^$1=" "$APP_DIR/.env" && sed -i "s#^$1=.*#$1=$2#" "$APP_DIR/.env" || echo "$1=$2" >> "$APP_DIR/.env"; }
+set_app_setting HOST 127.0.0.1
+set_app_setting SANDBOX_BROKER_SOCKET /run/pootw-broker/broker.sock
 
-echo "==> Installing the app service"
-sed "s#__APP_DIR__#$APP_DIR#g" "$APP_DIR/deploy/phish-out-of-water.service" > /etc/systemd/system/phish-out-of-water.service
+echo "==> Configuring the detonation broker (sandbox settings only, no API keys)"
+mkdir -p /etc/pootw
+cat > /etc/pootw/broker.env <<'EOF'
+SANDBOX_BROKER_SOCKET=/run/pootw-broker/broker.sock
+SANDBOX_IMAGE=phish-out-of-water/detonator:latest
+SANDBOX_NETWORK=pootw-sandbox
+SANDBOX_RUNTIME=runsc
+SANDBOX_RESOLV_CONF=/etc/pootw/sandbox-resolv.conf
+SANDBOX_CHROMIUM_SANDBOX=enabled
+SANDBOX_TIMEOUT_SECONDS=75
+MAX_CONCURRENT_INSPECTIONS=2
+EOF
+chmod 0644 /etc/pootw/broker.env
+
+echo "==> Installing the broker and app services"
+for unit in pootw-detonation-broker phish-out-of-water; do
+  sed "s#__APP_DIR__#$APP_DIR#g" "$APP_DIR/deploy/$unit.service" > "/etc/systemd/system/$unit.service"
+done
 systemctl daemon-reload
+systemctl enable --now pootw-detonation-broker.service
 systemctl enable --now phish-out-of-water.service
 
 echo "==> Serving over HTTPS"

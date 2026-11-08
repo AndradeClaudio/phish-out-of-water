@@ -11,8 +11,11 @@ import { VultrInferenceClient } from './infrastructure/inference/vultr-inference
 import { VultrReportWriter } from './infrastructure/inference/vultr-report-writer.js';
 import { VultrVisualAnalyst } from './infrastructure/inference/vultr-visual-analyst.js';
 import { InMemoryInspectionRepository } from './infrastructure/persistence/in-memory-inspection-repository.js';
+import type { Sandbox } from './application/ports.js';
+import { BrokeredSandbox } from './infrastructure/sandbox/brokered-sandbox.js';
+import { DockerDetonationRunner } from './infrastructure/sandbox/docker-detonation-runner.js';
 import { DockerSandbox } from './infrastructure/sandbox/docker-sandbox.js';
-import { readSettings } from './infrastructure/settings.js';
+import { readSettings, type SandboxAccess } from './infrastructure/settings.js';
 import { buildHttpServer } from './interface/http/http-server.js';
 
 const settings = readSettings(process.env);
@@ -23,7 +26,7 @@ const inference = new VultrInferenceClient(settings.inference);
 const runInspection = new RunInspection({
   inspections,
   clock,
-  sandbox: new DockerSandbox(settings.sandbox),
+  sandbox: sandboxFor(settings.sandbox),
   visualAnalyst: new VultrVisualAnalyst(inference, settings.inference.visionModel),
   reportWriter: new ReportWriterWithFallback(
     new VultrReportWriter(inference, settings.inference.reportModel),
@@ -44,4 +47,10 @@ const server = buildHttpServer({
   publicDirectory: fileURLToPath(new URL('../public', import.meta.url)),
 });
 
-await server.listen({ port: settings.port, host: '0.0.0.0' });
+await server.listen({ port: settings.port, host: settings.host });
+
+function sandboxFor(access: SandboxAccess): Sandbox {
+  return access.kind === 'broker'
+    ? new BrokeredSandbox({ socketPath: access.socketPath, timeoutSeconds: access.timeoutSeconds })
+    : new DockerSandbox(new DockerDetonationRunner(access.docker));
+}
