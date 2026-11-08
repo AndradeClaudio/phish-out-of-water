@@ -14,6 +14,7 @@ tries to download, and then **destroys the sandbox**. You get a plain-language a
 > Vultr Agent Rush Hackathon, **Challenge 1: Blast Radius Zero** (Pattern B, sandboxed browser use).
 
 ### ▶ Try it live: **https://155-138-195-32.sslip.io**
+### 🎬 Demo video: **https://youtu.be/a47_4mpxm8Q**
 
 Click **"Try a harmless demo scam"** to watch a containment, or paste any link you are unsure about.
 
