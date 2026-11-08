@@ -1,7 +1,10 @@
 [Unit]
 Description=Phish Out of Water - suspicious link inspector
 After=network-online.target docker.service pootw-sandbox-network.service
+Wants=network-online.target
 Requires=docker.service pootw-sandbox-network.service
+# Never give up restarting: the demo must come back on its own after any crash or reboot.
+StartLimitIntervalSec=0
 
 [Service]
 User=phishoutofwater
@@ -9,8 +12,8 @@ Group=phishoutofwater
 WorkingDirectory=__APP_DIR__
 EnvironmentFile=__APP_DIR__/.env
 ExecStart=/usr/bin/node __APP_DIR__/dist/main.js
-Restart=on-failure
-RestartSec=3
+Restart=always
+RestartSec=5
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
