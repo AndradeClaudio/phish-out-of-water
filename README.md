@@ -17,6 +17,8 @@ tries to download, and then **destroys the sandbox**. You get a plain-language a
 ### 🎬 Demo video: **https://youtu.be/a47_4mpxm8Q**
 
 Click **"Try a harmless demo scam"** to watch a containment, or paste any link you are unsure about.
+The demo link is **https://andradeclaudio.github.io/phish-out-of-water-demo/**: a harmless fake "customs fee" page for a
+fictional brand that asks for card details and an SMS code and pushes a fake `SwiftParcel-Tracker.apk` (a text file).
 
 ## The containment moment
 
