@@ -13,10 +13,10 @@ tries to download, and then **destroys the sandbox**. You get a plain-language a
 
 > Vultr Agent Rush Hackathon, **Challenge 1: Blast Radius Zero** (Pattern B, sandboxed browser use).
 
-### ▶ Try it live: **https://155-138-195-32.sslip.io**
 ### 🎬 Demo video: **https://youtu.be/a47_4mpxm8Q**
 
-Click **"Try a harmless demo scam"** to watch a containment, or paste any link you are unsure about.
+The hosted demo has been taken down since the hackathon ended; see [Run it](#run-it) to run your own.
+Once it is running, click **"Try a harmless demo scam"** to watch a containment, or paste any link you are unsure about.
 The demo link is **https://andradeclaudio.github.io/phish-out-of-water-demo/**: a harmless fake "customs fee" page for a
 fictional brand that asks for card details and an SMS code and pushes a fake `SwiftParcel-Tracker.apk` (a text file).
 
